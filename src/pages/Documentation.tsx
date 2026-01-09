@@ -1,23 +1,20 @@
-import { useState, useEffect, useRef } from "react";
 import { User as FirebaseUser } from "firebase/auth";
 import {
   CheckCircle2,
   Terminal,
-  FolderSync,
-  ScrollText,
-  Cog,
-  ArrowRight,
-  Image,
   FileText,
   Video,
-  ShieldCheck,
-  Lock,
-  Trash2,
+  Image as ImageIcon,
+  Shield,
+  Cloud,
+  Database,
+  Eye,
+  Server,
+  Code,
+  BookOpen,
 } from "lucide-react";
 import Header from "@/components/Header";
-import DocsSidebar from "@/components/DocsSidebar";
 import CodeBlock from "@/components/CodeBlock";
-import FileTypesBadge from "@/components/FileTypesBadge";
 
 interface DocumentationProps {
   isAuthenticated?: boolean;
@@ -29,36 +26,6 @@ const Documentation = ({
   onLogout,
   user,
 }: DocumentationProps) => {
-  const [activeSection, setActiveSection] = useState("overview");
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: "-20% 0px -60% 0px" }
-    );
-
-    Object.values(sectionRefs.current).forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToSection = (sectionId: string) => {
-    sectionRefs.current[sectionId]?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const handleLogout = () => {
-    onLogout?.();
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header
@@ -67,415 +34,476 @@ const Documentation = ({
         user={user}
       />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-12">
-          <DocsSidebar
-            activeSection={activeSection}
-            onSectionClick={scrollToSection}
-          />
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <main className="prose prose-slate dark:prose-invert max-w-none">
+          {/* Header */}
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold mb-4">Phobos</h1>
+            <p className="text-lg text-muted-foreground">
+              A containerized privacy tool that strips metadata from files
+              (images, docs, video) using <code>exiftool</code>, backs them up
+              to cloud storage using <code>rclone</code>, and logs events to
+              Firebase Firestore.
+            </p>
+          </div>
 
-          <main className="flex-1 max-w-3xl animate-fade-in">
-            {/* Overview */}
-            <section
-              id="overview"
-              ref={(el) => (sectionRefs.current.overview = el)}
-              className="mb-16"
-            >
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                Getting Started with Phobos
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                Phobos is an automated metadata removal and secure backup system
-                designed to protect user privacy. This guide will help you set
-                up the <strong className="text-foreground">Phobos Core</strong>{" "}
-                locally using Docker.
-              </p>
-
-              <div className="grid sm:grid-cols-2 gap-4 mb-6">
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                  <h4 className="font-medium text-sm mb-1 text-primary">
-                    Privacy-First
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Ensure sensitive data never leaks from your files.
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-success/5 border border-success/20">
-                  <h4 className="font-medium text-sm mb-1 text-success">
-                    Zero Data Loss
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Preserve file content and usability while removing unsafe
-                    metadata.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-muted/50 border border-border">
-                <p className="text-sm text-muted-foreground">
-                  <span className="text-foreground font-medium">
-                    Dual Deployment:
-                  </span>{" "}
-                  Web UI for individuals, CLI/daemon for developers and
-                  organizations. Originals are safely stored in your Google
-                  Drive.
-                </p>
-              </div>
-            </section>
-
-            {/* File Support */}
-            <section
-              id="file-support"
-              ref={(el) => (sectionRefs.current["file-support"] = el)}
-              className="mb-16"
-            >
-              <h2 className="section-title flex items-center gap-3">
-                <FileText className="w-6 h-6 text-primary" />
-                Supported File Types
-              </h2>
-              <p className="section-description mb-6">
-                Phobos processes a wide range of file formats, using
-                content-equivalent sanitization to preserve usability.
-              </p>
-              <FileTypesBadge />
-              <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border">
-                <p className="text-sm text-muted-foreground">
-                  <span className="text-foreground font-medium">
-                    Sanitization Philosophy:
-                  </span>{" "}
-                  Content-equivalent, not byte-identical. We remove known unsafe
-                  metadata while preserving ambiguous fields that might affect
-                  file usability.
-                </p>
-              </div>
-            </section>
-
-            {/* System Requirements */}
-            <section
-              id="requirements"
-              ref={(el) => (sectionRefs.current.requirements = el)}
-              className="mb-16"
-            >
-              <h2 className="section-title flex items-center gap-3">
-                <Cog className="w-6 h-6 text-primary" />
-                System Requirements
-              </h2>
-              <p className="section-description mb-6">
-                Ensure you have the following installed before proceeding.
-              </p>
-
-              <div className="space-y-3">
-                {[
-                  "Docker installed and running",
-                  "Docker Compose installed",
-                  "Git installed",
-                  "Basic command-line knowledge",
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
-                    <span className="text-sm">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Local Setup */}
-            <section
-              id="setup"
-              ref={(el) => (sectionRefs.current.setup = el)}
-              className="mb-16"
-            >
-              <h2 className="section-title flex items-center gap-3">
-                <Terminal className="w-6 h-6 text-primary" />
-                Local Setup Using Docker
-              </h2>
-              <p className="section-description mb-8">
-                Follow these steps to get Phobos running locally.
-              </p>
-
-              <div className="space-y-8">
-                {/* Step 1 */}
+          {/* Features */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <CheckCircle2 className="w-6 h-6 text-primary" />
+              Features
+            </h2>
+            <div className="grid gap-4">
+              <div className="flex gap-3 p-4 rounded-lg bg-card border">
+                <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                      1
-                    </span>
-                    <h3 className="text-lg font-medium">
-                      Clone the Repository
-                    </h3>
-                  </div>
-                  <CodeBlock
-                    code={`git clone https://github.com/your-org/phobos-core.git
-cd phobos-core`}
-                  />
+                  <strong>Metadata Removal:</strong> Strip EXIF and other
+                  metadata from files using exiftool
                 </div>
-
-                {/* Step 2 */}
+              </div>
+              <div className="flex gap-3 p-4 rounded-lg bg-card border">
+                <Cloud className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                      2
-                    </span>
-                    <h3 className="text-lg font-medium">
-                      Create Environment File
-                    </h3>
-                  </div>
-                  <CodeBlock code={`cp .env.example .env`} />
+                  <strong>Cloud Backup:</strong> Automatically backup originals
+                  to Google Drive (or other rclone remotes)
                 </div>
-
-                {/* Step 3 */}
+              </div>
+              <div className="flex gap-3 p-4 rounded-lg bg-card border">
+                <Database className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                      3
-                    </span>
-                    <h3 className="text-lg font-medium">
-                      Edit Environment Variables
-                    </h3>
-                  </div>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Open the{" "}
-                    <code className="px-1.5 py-0.5 rounded bg-muted text-foreground">
-                      .env
-                    </code>{" "}
-                    file and configure the following:
-                  </p>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <ArrowRight className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                      <span>
-                        <strong className="text-foreground">
-                          Google Drive API credentials
-                        </strong>{" "}
-                        — For secure cloud backup
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <ArrowRight className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                      <span>
-                        <strong className="text-foreground">
-                          Firebase configuration
-                        </strong>{" "}
-                        — For file indexing and auth
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <ArrowRight className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                      <span>
-                        <strong className="text-foreground">
-                          Local watch directory path
-                        </strong>{" "}
-                        — Folder to monitor for files
-                      </span>
-                    </li>
-                  </ul>
+                  <strong>Database Logging:</strong> Track all file processing
+                  events in Firebase Firestore
                 </div>
-
-                {/* Step 4 */}
+              </div>
+              <div className="flex gap-3 p-4 rounded-lg bg-card border">
+                <Eye className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                      4
-                    </span>
-                    <h3 className="text-lg font-medium">Build Docker Images</h3>
-                  </div>
-                  <CodeBlock code={`docker compose build`} />
+                  <strong>File Watcher:</strong> Daemon mode monitors
+                  directories and auto-processes new files
                 </div>
-
-                {/* Step 5 */}
+              </div>
+              <div className="flex gap-3 p-4 rounded-lg bg-card border">
+                <Server className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                      5
-                    </span>
-                    <h3 className="text-lg font-medium">Start Phobos Core</h3>
-                  </div>
-                  <CodeBlock code={`docker compose up -d`} />
+                  <strong>REST API:</strong> FastAPI-based endpoints for
+                  programmatic access
                 </div>
               </div>
-            </section>
-
-            {/* Usage Modes */}
-            <section
-              id="usage"
-              ref={(el) => (sectionRefs.current.usage = el)}
-              className="mb-16"
-            >
-              <h2 className="section-title flex items-center gap-3">
-                <FolderSync className="w-6 h-6 text-primary" />
-                Usage Modes
-              </h2>
-              <p className="section-description mb-8">
-                Phobos supports multiple operation modes to fit your workflow.
-              </p>
-
-              <div className="space-y-6">
-                {/* Daemon Mode */}
-                <div className="p-6 rounded-xl bg-card border border-border">
-                  <h3 className="text-lg font-semibold mb-2">Daemon Mode</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Automatically monitors a folder and cleans metadata from
-                    newly added files in real-time.
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 text-success text-xs font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                    Running by default
-                  </div>
-                </div>
-
-                {/* CLI Mode */}
-                <div className="p-6 rounded-xl bg-card border border-border">
-                  <h3 className="text-lg font-semibold mb-2">CLI Mode</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Manually clean files from command line for batch processing.
-                  </p>
-                  <CodeBlock
-                    code={`docker compose exec phobos phobos clean ./input ./output`}
-                  />
-                </div>
-
-                {/* Logs */}
-                <div className="p-6 rounded-xl bg-card border border-border">
-                  <h3 className="text-lg font-semibold mb-2">Logs & Status</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Monitor Phobos activity and troubleshoot issues.
-                  </p>
-                  <CodeBlock code={`docker compose logs -f`} />
+              <div className="flex gap-3 p-4 rounded-lg bg-card border">
+                <Terminal className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <strong>CLI:</strong> Rich command-line interface for manual
+                  operations
                 </div>
               </div>
-            </section>
+            </div>
+          </section>
 
-            {/* Internals */}
-            <section
-              id="internals"
-              ref={(el) => (sectionRefs.current.internals = el)}
-              className="mb-16"
-            >
-              <h2 className="section-title flex items-center gap-3">
-                <ScrollText className="w-6 h-6 text-primary" />
-                What Happens Internally
-              </h2>
-              <p className="section-description mb-8">
-                Here's how Phobos processes your files behind the scenes.
-              </p>
-
-              <div className="relative">
-                <div className="absolute left-[23px] top-8 bottom-8 w-px bg-border" />
-
-                <div className="space-y-8">
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 z-10">
-                      <span className="text-primary font-semibold">1</span>
-                    </div>
-                    <div className="pt-2">
-                      <h4 className="font-medium mb-1">Original Backup</h4>
-                      <p className="text-muted-foreground text-sm">
-                        Your original file is securely backed up to your Google
-                        Drive before any processing.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 z-10">
-                      <span className="text-primary font-semibold">2</span>
-                    </div>
-                    <div className="pt-2">
-                      <h4 className="font-medium mb-1">Metadata Removal</h4>
-                      <p className="text-muted-foreground text-sm">
-                        Sensitive metadata (location, author, version history)
-                        is automatically detected and stripped.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 z-10">
-                      <span className="text-primary font-semibold">3</span>
-                    </div>
-                    <div className="pt-2">
-                      <h4 className="font-medium mb-1">Clean Output</h4>
-                      <p className="text-muted-foreground text-sm">
-                        A privacy-safe, content-equivalent version is
-                        produced—ready to share securely.
-                      </p>
-                    </div>
-                  </div>
+          {/* Supported File Types */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Supported File Types</h2>
+            <div className="grid gap-3">
+              <div className="flex gap-3 items-center p-3 rounded-lg bg-muted/50">
+                <ImageIcon className="w-5 h-5 text-primary" />
+                <div>
+                  <strong>Images:</strong> <code>.jpg</code>, <code>.jpeg</code>
+                  , <code>.png</code>
                 </div>
               </div>
-            </section>
-
-            {/* Security */}
-            <section
-              id="security"
-              ref={(el) => (sectionRefs.current.security = el)}
-              className="mb-16"
-            >
-              <h2 className="section-title flex items-center gap-3">
-                <ShieldCheck className="w-6 h-6 text-primary" />
-                Security Considerations
-              </h2>
-              <p className="section-description mb-8">
-                Phobos is designed with strong practical security and clear
-                trust boundaries.
-              </p>
-
-              <div className="space-y-4">
-                <div className="flex gap-4 p-4 rounded-xl bg-card border border-border">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Trash2 className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-1">Ephemeral Processing</h4>
-                    <p className="text-muted-foreground text-sm">
-                      Files exist only during processing on the server and are
-                      deleted immediately afterward. No persistent storage of
-                      your data.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 p-4 rounded-xl bg-card border border-border">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Lock className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-1">Isolated Docker Engine</h4>
-                    <p className="text-muted-foreground text-sm">
-                      The core sanitization engine runs in an isolated Docker
-                      container, ensuring clear separation from other services.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 p-4 rounded-xl bg-card border border-border">
-                  <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-success" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-1">User Ownership</h4>
-                    <p className="text-muted-foreground text-sm">
-                      Google Drive backup ensures you maintain full ownership of
-                      your original files. Phobos never stores copies beyond
-                      processing.
-                    </p>
-                  </div>
+              <div className="flex gap-3 items-center p-3 rounded-lg bg-muted/50">
+                <FileText className="w-5 h-5 text-primary" />
+                <div>
+                  <strong>Documents:</strong> <code>.pdf</code>
                 </div>
               </div>
-
-              <div className="mt-6 p-4 rounded-xl bg-warning/5 border border-warning/20">
-                <p className="text-sm text-muted-foreground">
-                  <span className="text-warning font-medium">Note:</span> v1
-                  focuses on individual users. Organization accounts and
-                  enterprise policy enforcement are planned for future versions.
-                </p>
+              <div className="flex gap-3 items-center p-3 rounded-lg bg-muted/50">
+                <Video className="w-5 h-5 text-primary" />
+                <div>
+                  <strong>Videos:</strong> <code>.mp4</code>, <code>.mov</code>
+                </div>
               </div>
-            </section>
-          </main>
-        </div>
+            </div>
+          </section>
+
+          {/* Quick Start */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Quick Start</h2>
+
+            <h3 className="text-xl font-semibold mb-4">Local Development</h3>
+
+            <div className="mb-6">
+              <h4 className="font-semibold mb-3">1. Clone and setup</h4>
+              <CodeBlock
+                code={`git clone <repo-url>
+cd phobos
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
+pip install -r requirements.txt`}
+                language="bash"
+              />
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-semibold mb-3">
+                2. Configure environment (copy <code>.env.example</code> to{" "}
+                <code>.env</code>)
+              </h4>
+              <CodeBlock
+                code={`DAEMON_MODE=false
+WATCH_DIR=/data/watch
+OUTPUT_DIR=/data/clean
+RCLONE_REMOTE_NAME=gdrive
+RCLONE_DEST_PATH=backups
+FIREBASE_CREDENTIALS=/path/to/firebase-credentials.json`}
+                language="bash"
+              />
+            </div>
+
+            <div className="mb-8">
+              <h4 className="font-semibold mb-3">3. Run CLI commands</h4>
+              <CodeBlock
+                code={`# Health check
+python main.py health
+
+# Sanitize a file
+python main.py sanitize /path/to/photo.jpg
+
+# Preview metadata only (no changes)
+python main.py sanitize /path/to/photo.jpg --dry-run
+
+# Skip confirmation after preview
+python main.py sanitize /path/to/photo.jpg --confirm
+
+# Show all metadata (not only removable)
+python main.py sanitize /path/to/photo.jpg --dry-run --show-all-metadata
+
+# Backup a file
+python main.py backup /path/to/file.pdf --remote gdrive:backups
+
+# Start API server
+python main.py run-api
+
+# Start daemon mode
+python main.py run-daemon`}
+                language="bash"
+              />
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Docker Deployment</h3>
+
+            <div className="mb-6">
+              <h4 className="font-semibold mb-3">1. Build the image</h4>
+              <CodeBlock
+                code={`docker build -t cleanslate .`}
+                language="bash"
+              />
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-semibold mb-3">2. Run in API-only mode</h4>
+              <CodeBlock
+                code={`docker run -p 8000:8000 \\
+  -e DAEMON_MODE=false \\
+  -v $(pwd)/data:/data \\
+  -v $(pwd)/firebase-credentials.json:/app/firebase-service-account.json \\
+  cleanslate`}
+                language="bash"
+              />
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-semibold mb-3">
+                3. Run in daemon mode (watcher + API)
+              </h4>
+              <CodeBlock
+                code={`docker run -p 8000:8000 \\
+  -e DAEMON_MODE=true \\
+  -v $(pwd)/data:/data \\
+  -v $(pwd)/rclone.conf:/root/.config/rclone/rclone.conf \\
+  -v $(pwd)/firebase-credentials.json:/app/firebase-service-account.json \\
+  cleanslate`}
+                language="bash"
+              />
+            </div>
+          </section>
+
+          {/* Architecture */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Code className="w-6 h-6 text-primary" />
+              Architecture
+            </h2>
+
+            <h3 className="text-xl font-semibold mb-4">Services</h3>
+            <ul className="space-y-2 mb-6">
+              <li>
+                <code>app/services/backup_service.py</code>: Rclone wrapper for
+                cloud uploads
+              </li>
+              <li>
+                <code>app/services/cleaner_service.py</code>: Exiftool wrapper
+                for metadata removal
+              </li>
+              <li>
+                <code>app/services/db_service.py</code>: Firebase Firestore
+                client for event logging
+              </li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-4">Daemon Mode</h3>
+            <p className="mb-3">
+              The file watcher (<code>app/daemon/watcher.py</code>) monitors{" "}
+              <code>WATCH_DIR</code> and:
+            </p>
+            <ol className="list-decimal list-inside space-y-2 mb-6 ml-4">
+              <li>Backs up original file to cloud storage</li>
+              <li>Sanitizes file by removing metadata</li>
+              <li>
+                Moves processed file to <code>OUTPUT_DIR</code>
+              </li>
+              <li>Logs transaction to Firestore</li>
+            </ol>
+
+            <h3 className="text-xl font-semibold mb-4">API Endpoints</h3>
+            <ul className="space-y-2 mb-6">
+              <li>
+                <code>GET /health</code> - Health check
+              </li>
+              <li>
+                <code>GET /status</code> - Service status
+              </li>
+              <li>
+                <code>POST /sanitize</code> - Upload a file, returns full
+                metadata, removed metadata, and a shareable link to the
+                sanitized file on the configured rclone remote
+              </li>
+              <li>
+                <code>POST /backup</code> - Backup a file to cloud
+              </li>
+            </ul>
+
+            <div className="mb-6">
+              <p className="mb-3">Example sanitize upload (multipart):</p>
+              <CodeBlock
+                code={`curl -X POST http://localhost:8000/sanitize \\
+  -F "file=@/path/to/photo.jpg" | jq`}
+                language="bash"
+              />
+            </div>
+
+            <div className="mb-6">
+              <p className="mb-3">Example response (abridged):</p>
+              <CodeBlock
+                code={`{
+  "success": true,
+  "message": "File sanitized successfully",
+  "file_path": "/tmp/cleanslate_uploads/abc123.jpg",
+  "file_size": 12345,
+  "metadata_before": {"EXIF:Make": "Canon"},
+  "metadata_after": {},
+  "removed_metadata": {"EXIF:Make": {"before": "Canon", "after": null}},
+  "remote_link": "https://drive.google.com/..."
+}`}
+                language="json"
+              />
+            </div>
+          </section>
+
+          {/* Configuration */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Configuration</h2>
+
+            <h3 className="text-xl font-semibold mb-4">
+              Environment Variables
+            </h3>
+            <div className="overflow-x-auto mb-8">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-semibold">Variable</th>
+                    <th className="text-left p-3 font-semibold">Default</th>
+                    <th className="text-left p-3 font-semibold">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>DAEMON_MODE</code>
+                    </td>
+                    <td className="p-3">
+                      <code>false</code>
+                    </td>
+                    <td className="p-3">Enable daemon mode (watcher + API)</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>WATCH_DIR</code>
+                    </td>
+                    <td className="p-3">
+                      <code>/data/watch</code>
+                    </td>
+                    <td className="p-3">Directory to monitor for new files</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>OUTPUT_DIR</code>
+                    </td>
+                    <td className="p-3">
+                      <code>/data/clean</code>
+                    </td>
+                    <td className="p-3">Directory for processed files</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>RCLONE_REMOTE_NAME</code>
+                    </td>
+                    <td className="p-3">
+                      <code>gdrive</code>
+                    </td>
+                    <td className="p-3">
+                      Rclone remote name (from rclone.conf)
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>RCLONE_DEST_PATH</code>
+                    </td>
+                    <td className="p-3">
+                      <code>backups</code>
+                    </td>
+                    <td className="p-3">Folder path on remote</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>FIREBASE_ENABLED</code>
+                    </td>
+                    <td className="p-3">
+                      <code>true</code>
+                    </td>
+                    <td className="p-3">
+                      Toggle Firestore logging (set to <code>false</code> to
+                      disable Firebase completely)
+                    </td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3">
+                      <code>FIREBASE_CREDENTIALS</code>
+                    </td>
+                    <td className="p-3">-</td>
+                    <td className="p-3">
+                      Path to Firebase service account JSON (only required when{" "}
+                      <code>FIREBASE_ENABLED=true</code>)
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Setup Firebase</h3>
+            <ol className="list-decimal list-inside space-y-2 mb-6 ml-4">
+              <li>
+                Create a Firebase project at{" "}
+                <a
+                  href="https://console.firebase.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://console.firebase.google.com
+                </a>
+              </li>
+              <li>Enable Firestore Database</li>
+              <li>
+                Generate a service account key (Project Settings → Service
+                Accounts)
+              </li>
+              <li>
+                Download the JSON key and set <code>FIREBASE_CREDENTIALS</code>{" "}
+                to its path
+              </li>
+            </ol>
+
+            <h3 className="text-xl font-semibold mb-4">Setup Rclone</h3>
+            <ol className="list-decimal list-inside space-y-2 mb-4 ml-4">
+              <li>
+                Install rclone:{" "}
+                <a
+                  href="https://rclone.org/install/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  https://rclone.org/install/
+                </a>
+              </li>
+              <li>Configure remote:</li>
+            </ol>
+            <div className="mb-6">
+              <CodeBlock
+                code={`rclone config
+# Follow prompts to set up Google Drive or other remote`}
+                language="bash"
+              />
+            </div>
+            <p className="mb-6">
+              3. Mount config in Docker or set <code>RCLONE_REMOTE_NAME</code>{" "}
+              to match your remote name
+            </p>
+          </section>
+
+          {/* Development */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <BookOpen className="w-6 h-6 text-primary" />
+              Development
+            </h2>
+
+            <h3 className="text-xl font-semibold mb-4">Run Tests</h3>
+            <div className="mb-8">
+              <CodeBlock code={`pytest -v`} language="bash" />
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Project Layout</h3>
+            <ul className="space-y-2 mb-6">
+              <li>
+                <code>app/</code> — application code
+                <ul className="ml-6 mt-2 space-y-1">
+                  <li>
+                    <code>app/services/</code> — service modules (rclone,
+                    cleaner, db)
+                  </li>
+                  <li>
+                    <code>app/daemon/</code> — watcher/daemon logic
+                  </li>
+                  <li>
+                    <code>app/api/</code> — FastAPI app modules
+                  </li>
+                  <li>
+                    <code>app/cli.py</code> — CLI entrypoint
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <code>tests/</code> — test suite
+              </li>
+              <li>
+                <code>.env.example</code> — environment template
+              </li>
+              <li>
+                <code>requirements.txt</code> — dependencies
+              </li>
+              <li>
+                <code>Dockerfile</code> — container image
+              </li>
+            </ul>
+          </section>
+
+          {/* License */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-4">License</h2>
+            <p>MIT</p>
+          </section>
+        </main>
       </div>
     </div>
   );
