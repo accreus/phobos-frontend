@@ -134,7 +134,7 @@ const Documentation = ({
             <div className="mb-6">
               <h4 className="font-semibold mb-3">1. Clone and setup</h4>
               <CodeBlock
-                code={`git clone <repo-url>
+                code={`git clone https://github.com/puffious/phobos
 cd phobos
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
