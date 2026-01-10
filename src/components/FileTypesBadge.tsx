@@ -4,17 +4,17 @@ const fileTypes = [
   {
     category: "Images",
     icon: Image,
-    formats: [".jpg", ".png", ".tiff", ".heic"],
+    formats: [".jpg", ".png"],
   },
   {
     category: "Documents",
     icon: FileText,
-    formats: [".docx", ".xlsx", ".pptx", ".pdf"],
+    formats: [".pdf"],
   },
   {
     category: "Media",
     icon: Video,
-    formats: [".mp4", ".mov", ".mp3", ".wav"],
+    formats: [".mp4", ".mov", ".mp3"],
   },
 ];
 
