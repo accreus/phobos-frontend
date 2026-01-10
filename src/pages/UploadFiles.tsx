@@ -114,7 +114,9 @@ const UploadFiles = ({
       formData.append("file", file);
 
       const response = await fetch(
-        "http://x.kira.pio.us.eu.org:8000/sanitize",
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+        }/sanitize`,
         {
           method: "POST",
           body: formData,

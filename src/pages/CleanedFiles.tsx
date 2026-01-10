@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Download,
   FolderOpen,
@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/utils";
 
 import { User as FirebaseUser } from "firebase/auth";
 
@@ -66,27 +67,27 @@ const CleanedFiles = ({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // TODO: Implement API call to fetch cleaned files
-  // useEffect(() => {
-  //   const fetchCleanedFiles = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await fetch('/api/cleaned-files');
-  //       if (!response.ok) throw new Error('Failed to fetch files');
-  //       const data = await response.json();
-  //       setFiles(data);
-  //     } catch (error) {
-  //       toast({
-  //         title: "Error",
-  //         description: "Failed to load cleaned files",
-  //         variant: "destructive",
-  //       });
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchCleanedFiles();
-  // }, [toast]);
+  useEffect(() => {
+    const fetchCleanedFiles = async () => {
+      setLoading(true);
+      try {
+        const data = await apiRequest<CleanedFile[]>("/api/cleaned-files");
+        setFiles(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Failed to load cleaned files",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCleanedFiles();
+  }, [toast]);
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith("image/"))
