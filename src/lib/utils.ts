@@ -6,10 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Get the API base URL from environment or use localhost:5000 as default
+ * Get the API base URL from environment or use production API as default
  */
 export function getApiBaseUrl(): string {
-  return import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  return import.meta.env.VITE_API_BASE_URL || "https://phobos-api.pico.qzz.io";
 }
 
 /**
